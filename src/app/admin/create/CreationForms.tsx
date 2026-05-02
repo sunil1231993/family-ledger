@@ -81,6 +81,10 @@ export function CreationForms({ users }: { users: any[] }) {
                 <Label>Start Date</Label>
                 <Input name="start_date" type="date" required className="bg-zinc-950 border-zinc-800" />
               </div>
+              <div className="space-y-2">
+                <Label>Description (Optional)</Label>
+                <Input name="description" type="text" placeholder="e.g. For car purchase" className="bg-zinc-950 border-zinc-800" />
+              </div>
               <Button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700">Create Loan</Button>
             </form>
           </CardContent>
@@ -111,6 +115,10 @@ export function CreationForms({ users }: { users: any[] }) {
               <div className="space-y-2">
                 <Label>Start Date</Label>
                 <Input name="start_date" type="date" required className="bg-zinc-950 border-zinc-800" />
+              </div>
+              <div className="space-y-2">
+                <Label>Description (Optional)</Label>
+                <Input name="description" type="text" placeholder="e.g. Property downpayment" className="bg-zinc-950 border-zinc-800" />
               </div>
               <Button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700">Create Investment</Button>
             </form>
@@ -148,6 +156,10 @@ export function CreationForms({ users }: { users: any[] }) {
                   <Label>End Date</Label>
                   <Input name="end_date" type="date" required className="bg-zinc-950 border-zinc-800" />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Description (Optional)</Label>
+                <Input name="description" type="text" placeholder="e.g. Gold committee" className="bg-zinc-950 border-zinc-800" />
               </div>
               <Button type="submit" disabled={loading} className="w-full bg-pink-600 hover:bg-pink-700">Create Committee</Button>
             </form>

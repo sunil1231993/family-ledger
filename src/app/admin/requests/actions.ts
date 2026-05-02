@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendEmail } from '@/lib/email'
 
 export async function updateTransactionStatus(transactionId: string, status: 'approved' | 'rejected') {
   const supabase = await createClient()
@@ -10,13 +11,13 @@ export async function updateTransactionStatus(transactionId: string, status: 'ap
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Not authorized')
+  const { data: adminProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (adminProfile?.role !== 'admin') throw new Error('Not authorized')
 
   // Begin update logic
   const { data: tx, error: fetchError } = await supabase
     .from('transactions')
-    .select('*')
+    .select('*, profiles(email, full_name)')
     .eq('id', transactionId)
     .single()
 
@@ -43,6 +44,20 @@ export async function updateTransactionStatus(transactionId: string, status: 'ap
     } else if (tx.category === 'interest') {
        // Just logs it as interest paid, principal remains same
     }
+  }
+
+  // Notify Borrower
+  const borrowerEmail = (tx.profiles as any)?.email
+  if (borrowerEmail) {
+    await sendEmail({
+      to: borrowerEmail,
+      subject: `Payment Request ${status === 'approved' ? 'Approved' : 'Rejected'}`,
+      html: `
+        <h2>Hi ${(tx.profiles as any)?.full_name},</h2>
+        <p>Your payment request of ₹${Number(tx.amount).toLocaleString()} has been <strong>${status}</strong>.</p>
+        <p>Log in to the Family Ledger to see your updated balance.</p>
+      `
+    })
   }
 
   revalidatePath('/admin')

@@ -25,6 +25,12 @@ const routes = [
     color: 'text-emerald-400',
   },
   {
+    label: 'Investments',
+    icon: CreditCard,
+    href: '/admin/investments',
+    color: 'text-teal-400',
+  },
+  {
     label: 'Committee',
     icon: ListTodo,
     href: '/admin/committee',
