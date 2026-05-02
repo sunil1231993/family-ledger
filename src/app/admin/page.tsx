@@ -9,25 +9,14 @@ export default async function AdminDashboard() {
   const { data: allLoans } = await supabase.from('loans').select('*, profiles(full_name)')
   const { data: allInvestments } = await supabase.from('investments').select('*, profiles(full_name)')
   const { data: allCommittees } = await supabase.from('committees').select('*, profiles(full_name)')
-  const { data: allTransactions } = await supabase.from('transactions').select('amount, status, type, loan_id, investment_id, category')
+  const { data: allTransactions } = await supabase.from('transactions').select('amount, status, type')
   
-  const loanPrincipal = allLoans?.reduce((sum, loan) => sum + Number(loan.principal_amount), 0) || 0
-  const investmentPrincipal = allInvestments?.reduce((sum, inv) => sum + Number(inv.principal_amount), 0) || 0
-  
+  const totalPrincipal = allLoans?.reduce((sum, loan) => sum + Number(loan.principal_amount), 0) || 0
   const totalApprovedCredits = allTransactions?.filter(t => t.status === 'approved' && t.type === 'credit')
     .reduce((sum, t) => sum + Number(t.amount), 0) || 0
     
-  const cashOnStreet = loanPrincipal + investmentPrincipal
+  const cashOnStreet = totalPrincipal
   const cashOnHand = totalApprovedCredits
-
-  // Calculate Monthly Income Target
-  const investmentProfit = allInvestments?.reduce((sum, inv) => sum + Number(inv.expected_monthly_profit), 0) || 0
-  const loanInterest = allLoans?.reduce((sum, loan) => {
-    const monthlyRate = Number(loan.interest_rate) // Assuming the rate entered is monthly %
-    return sum + (Number(loan.principal_amount) * (monthlyRate / 100))
-  }, 0) || 0
-  
-  const expectedMonthlyIncome = investmentProfit + loanInterest
 
   const summaryData = {
     loans: allLoans || [],
@@ -47,40 +36,38 @@ export default async function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{cashOnStreet.toLocaleString('en-IN')}</div>
-            <p className="text-xs text-zinc-500 mt-1">Loan + Investment Principal</p>
+            <p className="text-xs text-zinc-500 mt-1">Active principal out</p>
           </CardContent>
         </Card>
         
         <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Monthly Income Target</CardTitle>
+            <CardTitle className="text-sm font-medium text-zinc-400">Cash Received</CardTitle>
             <IndianRupee className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{expectedMonthlyIncome.toLocaleString('en-IN')}</div>
-            <p className="text-xs text-zinc-500 mt-1">Interest + Investment Profit</p>
+            <div className="text-2xl font-bold">₹{cashOnHand.toLocaleString('en-IN')}</div>
+            <p className="text-xs text-zinc-500 mt-1">Total approved credits</p>
           </CardContent>
         </Card>
 
         <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Total Cash Received</CardTitle>
-            <Activity className="h-4 w-4 text-pink-500" />
+            <CardTitle className="text-sm font-medium text-zinc-400">Active Loans</CardTitle>
+            <Users className="h-4 w-4 text-pink-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{cashOnHand.toLocaleString('en-IN')}</div>
-            <p className="text-xs text-zinc-500 mt-1">Total approved payments</p>
+            <div className="text-2xl font-bold">{allLoans?.length || 0}</div>
           </CardContent>
         </Card>
 
         <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Pending Approvals</CardTitle>
-            <Users className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-zinc-400">Pending Requests</CardTitle>
+            <Activity className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{allTransactions?.filter(t => t.status === 'pending').length || 0}</div>
-            <p className="text-xs text-zinc-500 mt-1">Payments awaiting review</p>
           </CardContent>
         </Card>
       </div>
